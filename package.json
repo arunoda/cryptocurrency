@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/arunoda/cryptocurrency/issues"
   },
-  "homepage": "https://github.com/arunoda/cryptocurrency#readme"
+  "homepage": "https://github.com/arunoda/cryptocurrency#readme",
+  "dependencies": {
+    "akeypair": "^0.2.4",
+    "key-encoder": "^1.1.6"
+  }
 }
