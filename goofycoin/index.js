@@ -26,7 +26,7 @@ class Coin {
 
   transfer (user, newOwner) {
     if (user.publicKey !== this.payload.owner) {
-      throw new Error('You are not the owner of this coin')
+      throw new Error('You are not the owner of this coin.')
     }
 
     const newCoin = new Coin(
@@ -44,7 +44,7 @@ class Coin {
 
   verify () {
     // If this is just a created coin, there's nothing to verify
-    if (this.payload.type === 'create') return true
+    if (!this.prev) return true
 
     if (this.prev.getHash() !== this.payload.prevHash) {
       throw new Error('Previous coin has changed.')
