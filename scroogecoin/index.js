@@ -79,13 +79,19 @@ exports.payCoins = async function (prevCoins, newCoins, signFn) {
     // Check coin existness
     const [hash, index] = coinId.split('::')
     const coinTx = store[hash]
+
     if (!coinTx) {
-      throw new Error('The coin has never created')
+      throw new Error('The coin has never created 1')
+    }
+
+    const verifiedCoinTx = await exports.verify(coinTx)
+    if (!verifiedCoinTx) {
+      throw new Error(`The coin has been illegally modified: ${coinId}`)
     }
 
     const storedCoin = coinTx.coins[parseInt(index)]
     if (!storedCoin) {
-      throw new Error('The coin has never created')
+      throw new Error('The coin has never created 2')
     }
 
     coinOwners.push(storedCoin.owner)
@@ -131,8 +137,5 @@ exports.verify = async function (transaction) {
   const { publicKey } = await scrooge
   const hash = transaction.buildHash()
 
-  const verified = verify(publicKey, transaction.signatures[publicKey], hash)
-  if (!verified) {
-    throw new Error('Invalid Transaction')
-  }
+  return verify(publicKey, transaction.signatures[publicKey], hash)
 }

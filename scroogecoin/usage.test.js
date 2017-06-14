@@ -10,8 +10,7 @@ describe('ScroogeCoin', () => {
       [{owner: user.publicKey, value: 10}]
     )
     expect(tx.type).toBe('create')
-
-    ScroogeCoin.verify(tx)
+    expect(await ScroogeCoin.verify(tx)).toBe(true)
   })
 
   it ('should detect modified transactions when verifying', async () => {
@@ -19,13 +18,7 @@ describe('ScroogeCoin', () => {
     const tx = await ScroogeCoin.createCoin(user.publicKey, 10)
     tx.coins[0].value = 100
 
-    try {
-      await ScroogeCoin.verify(tx)
-      throw new Error('Should fail')
-    } catch (ex) {
-      if(/Invalid Transaction/.test(ex.message)) return
-      throw ex
-    }
+    expect(await ScroogeCoin.verify(tx)).toBe(false)
   })
 
   describe('pay coins', () => {
@@ -152,14 +145,22 @@ describe('ScroogeCoin', () => {
       const jamo = await crypto.createUser()
 
       const arunodaCoin = await ScroogeCoin.createCoin(arunoda.publicKey, 10)
-      // arunodaCoin.coins[0].value = 20
+      const arunodaCoinHash = arunodaCoin.buildHash()
+      arunodaCoin.coins[0].value = 20
 
-      // Pay arunoda's coin to jamo 
-      await ScroogeCoin.payCoins(
-        [`${arunodaCoin.buildHash()}::0`],
-        [{ owner: jamo.publicKey, value: 10}],
-        (owner, hash) => crypto.signData(arunoda.privateKey, hash)
-      )
+      // Pay arunoda's modified coin to jamo 
+      try {
+        await ScroogeCoin.payCoins(
+          [`${arunodaCoinHash}::0`],
+          [{ owner: jamo.publicKey, value: 20}],
+          (owner, hash) => crypto.signData(arunoda.privateKey, hash)
+        )
+        throw new Error('Should fail')
+      } catch(ex) {
+        if(/The coin has been illegally modified/.test(ex.message)) return
+        throw ex
+      }
+
     })
 
   })
